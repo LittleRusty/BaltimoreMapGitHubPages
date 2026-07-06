@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Baltimore ZIP Choropleth</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin:0; padding:0; }
+    #map { width:100vw; height:100vh; }
+    .tooltip {
+      position: absolute;
+      background: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+
+<body>
+<div id="map"></div>
+<div id="tooltip" class="tooltip" style="display:none;"></div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoidGhlc2tpbm55bWFuIiwiYSI6ImNtcjhoamdxODFtMG0zNXB3MmtkMDJ1ODIifQ.sGSlpFmTNU8UTIm1eYo2HA';
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [-76.6122, 39.2904], // Baltimore
+  zoom: 10.5
+});
+
+map.on('load', () => {
+  map.addSource('baltimore-zips', {
+    type: 'geojson',
+    data: 'data/baltimore_zips.geojson'
+  });
+
+  map.addLayer({
+    id: 'zip-fill',
+    type: 'fill',
+    source: 'baltimore-zips',
+    paint: {
+      'fill-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'value'],   // placeholder property
+        0, '#f2f0f7',
+        50, '#cbc9e2',
+        100, '#9e9ac8',
+        200, '#6a51a3'
+      ],
+      'fill-opacity': 0.75
+    }
+  });
+
+  map.addLayer({
+    id: 'zip-outline',
+    type: 'line',
+    source: 'baltimore-zips',
+    paint: {
+      'line-color': '#333',
+      'line-width': 1
+    }
+  });
+
+  const tooltip = document.getElementById('tooltip');
+
+  map.on('mousemove', 'zip-fill', (e) => {
+    const feature = e.features[0];
+    const zip = feature.properties.ZIPCODE || feature.properties.zip || 'Unknown ZIP';
+
+    tooltip.style.display = 'block';
+    tooltip.style.left = e.point.x + 10 + 'px';
+    tooltip.style.top = e.point.y + 10 + 'px';
+    tooltip.innerHTML = `ZIP: ${zip}`;
+  });
+
+  map.on('mouseleave', 'zip-fill', () => {
+    tooltip.style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>
