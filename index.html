@@ -62,7 +62,7 @@
       // Inject totals into each ZIP feature
       zipGeoJSON.features.forEach(f => {
         const zip = f.properties.ZIPCODE1;
-        f.properties.naloxone_total = totals[zip] || 0;
+        f.properties.naloxone_total = totals[zip] ?? 0;
       });
 
       // Load your GeoJSON from GitHub Pages
@@ -113,7 +113,7 @@
         tooltip.style.display = 'block';
         tooltip.style.left = (e.point.x + 10) + 'px';
         tooltip.style.top = (e.point.y + 10) + 'px';
-        tooltip.innerHTML = `ZIP: ${zip}`;
+        tooltip.innerHTML = `ZIP: ${zip}<br>Naloxone: ${total}`;
       });
 
       map.on('mouseleave', 'zip-fill', () => {
