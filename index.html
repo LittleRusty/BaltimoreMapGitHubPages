@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <title>Baltimore ZIP Choropleth</title>
@@ -9,8 +10,15 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 
   <style>
-    body { margin: 0; padding: 0; }
-    #map { width: 100vw; height: 100vh; }
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
 
     .tooltip {
       position: absolute;
@@ -19,7 +27,7 @@
       border-radius: 4px;
       font-size: 14px;
       pointer-events: none;
-      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
       display: none;
     }
   </style>
@@ -43,7 +51,19 @@
       zoom: 10.5
     });
 
-    map.on('load', () => {
+    map.on('load', async () => {
+
+      // Load ZIP polygons
+      const zipGeoJSON = await fetch('data/baltimore_zips.geojson').then(r => r.json());
+
+      // Load naloxone totals
+      const totals = await fetch('data/naloxone_totals.json').then(r => r.json());
+
+      // Inject totals into each ZIP feature
+      zipGeoJSON.features.forEach(f => {
+        const zip = f.properties.ZIPCODE1;
+        f.properties.naloxone_total = totals[zip] || 0;
+      });
 
       // Load your GeoJSON from GitHub Pages
       map.addSource('baltimore-zips', {
@@ -51,13 +71,22 @@
         data: 'data/baltimore_zips.geojson'
       });
 
-      // Choropleth fill layer (simple color for now)
+      // Choropleth color scale
       map.addLayer({
         id: 'zip-fill',
         type: 'fill',
         source: 'baltimore-zips',
         paint: {
-          'fill-color': '#6a51a3',
+          'fill-color': [
+            'interpolate',
+            ['linear'],
+            ['get', 'naloxone_total'],
+            0, '#f7fbff',
+            100, '#c6dbef',
+            500, '#6baed6',
+            1000, '#2171b5',
+            2000, '#08306b'
+          ],
           'fill-opacity': 0.65
         }
       });
@@ -79,6 +108,7 @@
       map.on('mousemove', 'zip-fill', (e) => {
         const feature = e.features[0];
         const zip = feature.properties.ZIPCODE1;
+        const total = f.properties.naloxone_total;
 
         tooltip.style.display = 'block';
         tooltip.style.left = (e.point.x + 10) + 'px';
@@ -92,4 +122,5 @@
     });
   </script>
 </body>
+
 </html>
