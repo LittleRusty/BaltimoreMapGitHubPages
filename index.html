@@ -54,10 +54,10 @@
     map.on('load', async () => {
 
       // Load ZIP polygons
-      const zipGeoJSON = await fetch('data/baltimore_zips.geojson').then(r => r.json());
+      const zipGeoJSON = await fetch('data/baltimore_zips.geojson?v=2').then(r => r.json());
 
       // Load naloxone totals
-      const totals = await fetch('data/naloxone_totals.json').then(r => r.json());
+      const totals = await fetch('data/naloxone_totals.json?v=2').then(r => r.json());
 
       // Inject totals into each ZIP feature
       zipGeoJSON.features.forEach(f => {
