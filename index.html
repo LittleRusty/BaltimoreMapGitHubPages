@@ -68,7 +68,7 @@
       // Load your GeoJSON from GitHub Pages
       map.addSource('baltimore-zips', {
         type: 'geojson',
-        data: 'data/baltimore_zips.geojson'
+        data: zipGeoJSON
       });
 
       // Choropleth color scale
@@ -110,7 +110,7 @@
 
         const feature = e.features[0];
         const zip = feature.properties.ZIPCODE1;
-        const total = f.properties.naloxone_total;
+        const total = feature.properties.naloxone_total;
 
         tooltip.style.display = 'block';
         tooltip.style.left = (e.point.x + 10) + 'px';
